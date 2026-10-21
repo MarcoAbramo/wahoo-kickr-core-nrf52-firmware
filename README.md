@@ -37,10 +37,38 @@ The trainer keeps its identity in one flash page at `0x78000`, six little-endian
 
 ### 1. Build the ESP32 glitcher
 
-See [`ESP32_nRF52_SWD/README.md`](ESP32_nRF52_SWD/README.md) for the wiring,
+See [`ESP32_nRF52_SWD/README.md`](ESP32_nRF52_SWD/README.md) for the
 required hardware and build instructions (PlatformIO). It flashes an ESP32 that
 talks SWD to the nRF52 and can bypass the readout protection (APPROTECT) by
 voltage glitching.
+
+### Wiring
+
+![Wiring diagram](docs/wiring.svg)
+
+The diagram matches the `KICKR_S3` PlatformIO env (ESP32-S3) used in this repo.
+Pins are set in [`ESP32_nRF52_SWD/platformio.ini`](ESP32_nRF52_SWD/platformio.ini).
+
+| ESP32-S3 (env `KICKR_S3`) | nRF52832 signal | nRF52832 QFN48 pin | Purpose |
+|---|---|---|---|
+| GPIO 21 (`swd_clock_pin`) | SWDCLK | 25 | SWD clock |
+| GPIO 47 (`swd_data_pin`)  | SWDIO  | 26 | SWD data |
+| GPIO 6 (`NRF_POWER`)      | VDD (3.3 V) | 13 / 36 / 48 | switched supply, lets the ESP32 power-cycle the target |
+| GPIO 4 (`GLITCHER`)       | → MOSFET gate | — | drives the N-channel MOSFET |
+| MOSFET drain (VOUT−)      | DEC1 (0.9 V core) | 1 | glitch injection point (crowbar to GND) |
+| MOSFET source            | GND | 31 / 45 + die pad | common ground |
+| GND                      | GND | 31 / 45 + die pad | common ground |
+| GPIO 5 (`OSCI_PIN`)       | DEC1 (scope probe) | 1 | optional, for tuning the glitch |
+
+> The classic plain-ESP32 wiring (SWDCLK = GPIO 21, SWDIO = GPIO 19, glitch MOSFET
+> on GPIO 5) is documented in the subfolder README. On the KICKR CORE, locate the
+> SWDIO / SWDCLK / GND / VDD / DEC1 pads near the nRF52832 on the PCB. For a sharper
+> glitch, remove the two DEC1 decoupling caps next to the chip. nRF52832 pin numbers
+> are from the [Nordic datasheet](https://docs.nordicsemi.com/r/bundle/ps_nrf52832/page/pin.html).
+
+### Video
+
+Walkthrough of this process: <https://youtu.be/iI3lOkicrSI>
 
 ### 2. Dump YOUR OWN trainer
 

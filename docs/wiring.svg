@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 620" font-family="-apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif">
+  <rect x="0" y="0" width="960" height="620" fill="#ffffff"/>
+  <text x="480" y="34" text-anchor="middle" font-size="22" font-weight="700" fill="#111827">Wahoo KICKR CORE — nRF52832 SWD + glitch wiring</text>
+  <text x="480" y="56" text-anchor="middle" font-size="13" fill="#6b7280">ESP32-S3 (PlatformIO env: KICKR_S3) → nRF52832 on the KICKR CORE board</text>
+
+  <!-- ESP32-S3 box -->
+  <rect x="40" y="110" width="250" height="300" rx="10" fill="#eef2ff" stroke="#4f46e5" stroke-width="2"/>
+  <text x="165" y="138" text-anchor="middle" font-size="16" font-weight="700" fill="#3730a3">ESP32-S3 DevKitC-1</text>
+  <text x="165" y="156" text-anchor="middle" font-size="11" fill="#6366f1">build env: KICKR_S3</text>
+
+  <text x="60" y="196" font-size="13" fill="#111827">GPIO 21  (SWDCLK)</text>
+  <text x="60" y="226" font-size="13" fill="#111827">GPIO 47  (SWDIO)</text>
+  <text x="60" y="256" font-size="13" fill="#111827">GPIO 6   (NRF_POWER)</text>
+  <text x="60" y="286" font-size="13" fill="#111827">GPIO 4   (GLITCHER)</text>
+  <text x="60" y="316" font-size="13" fill="#111827">GPIO 5   (OSCI, optional)</text>
+  <text x="60" y="346" font-size="13" fill="#111827">GND</text>
+
+  <!-- ESP32 pin dots -->
+  <circle cx="288" cy="192" r="4" fill="#4f46e5"/>
+  <circle cx="288" cy="222" r="4" fill="#4f46e5"/>
+  <circle cx="288" cy="252" r="4" fill="#4f46e5"/>
+  <circle cx="288" cy="282" r="4" fill="#4f46e5"/>
+  <circle cx="288" cy="312" r="4" fill="#4f46e5"/>
+  <circle cx="288" cy="342" r="4" fill="#111827"/>
+
+  <!-- nRF52832 box -->
+  <rect x="670" y="110" width="250" height="300" rx="10" fill="#ecfdf5" stroke="#059669" stroke-width="2"/>
+  <text x="795" y="138" text-anchor="middle" font-size="16" font-weight="700" fill="#065f46">nRF52832 (QFN48)</text>
+  <text x="795" y="156" text-anchor="middle" font-size="11" fill="#10b981">test pads on the KICKR CORE PCB</text>
+
+  <text x="690" y="196" font-size="13" fill="#111827">SWDCLK  (pin 25)</text>
+  <text x="690" y="226" font-size="13" fill="#111827">SWDIO   (pin 26)</text>
+  <text x="690" y="256" font-size="13" fill="#111827">VDD     (pin 13/36/48, 3.3 V)</text>
+  <text x="690" y="316" font-size="13" fill="#111827">DEC1    (pin 1, 0.9 V core)</text>
+  <text x="690" y="346" font-size="13" fill="#111827">GND     (pin 31/45 + die pad)</text>
+
+  <!-- nRF pin dots -->
+  <circle cx="672" cy="192" r="4" fill="#059669"/>
+  <circle cx="672" cy="222" r="4" fill="#059669"/>
+  <circle cx="672" cy="252" r="4" fill="#059669"/>
+  <circle cx="672" cy="312" r="4" fill="#dc2626"/>
+  <circle cx="672" cy="342" r="4" fill="#111827"/>
+
+  <!-- SWDCLK line -->
+  <path d="M288 192 H672" stroke="#4f46e5" stroke-width="2" fill="none"/>
+  <!-- SWDIO line -->
+  <path d="M288 222 H672" stroke="#4f46e5" stroke-width="2" fill="none"/>
+  <!-- NRF_POWER -> VDD -->
+  <path d="M288 252 H672" stroke="#f59e0b" stroke-width="2" fill="none"/>
+  <text x="470" y="245" text-anchor="middle" font-size="10" fill="#b45309">switched 3.3 V (power-cycle target)</text>
+
+  <!-- GND rail -->
+  <path d="M288 342 H672" stroke="#111827" stroke-width="2" fill="none"/>
+
+  <!-- MOSFET (glitch crowbar) -->
+  <rect x="400" y="470" width="160" height="110" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="2"/>
+  <text x="480" y="498" text-anchor="middle" font-size="14" font-weight="700" fill="#991b1b">N-channel MOSFET</text>
+  <text x="480" y="516" text-anchor="middle" font-size="11" fill="#dc2626">glitch crowbar</text>
+  <text x="418" y="542" font-size="12" fill="#111827">Gate  (PWM+)</text>
+  <text x="418" y="562" font-size="12" fill="#111827">Drain (VOUT−)</text>
+  <text x="520" y="562" font-size="12" fill="#111827">Source → GND</text>
+
+  <!-- GLITCHER GPIO4 -> MOSFET gate -->
+  <path d="M288 282 H360 V530 H400" stroke="#dc2626" stroke-width="2" fill="none"/>
+  <text x="330" y="300" font-size="10" fill="#991b1b">GPIO4 → gate</text>
+
+  <!-- MOSFET drain -> DEC1 -->
+  <path d="M560 548 H610 V312 H672" stroke="#dc2626" stroke-width="2" fill="none"/>
+  <text x="628" y="470" font-size="10" fill="#991b1b">drain → DEC1</text>
+
+  <!-- MOSFET source -> GND rail -->
+  <path d="M560 568 H640 V342" stroke="#111827" stroke-width="2" fill="none"/>
+
+  <!-- OSCI optional -->
+  <path d="M288 312 H330 V430 H628 V318" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="5 4" fill="none"/>
+  <text x="360" y="424" font-size="10" fill="#6b7280">GPIO5 → scope probe on DEC1 (optional, for tuning the glitch)</text>
+
+  <!-- notes -->
+  <rect x="40" y="110" width="0" height="0"/>
+  <text x="40" y="606" font-size="11" fill="#6b7280">Tip: for a sharper glitch, remove the two DEC1 decoupling caps near the nRF52832. Share a common GND between ESP32, MOSFET and nRF52.</text>
+</svg>
