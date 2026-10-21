@@ -1,0 +1,20 @@
+# PlatformIO build output / deps (regenerated on build)
+ESP32_nRF52_SWD/.pio/
+.pio/
+
+# Personal firmware dumps — never commit these (they carry YOUR serial/ANT+ ID)
+flash.bin
+uicr_private.bin
+
+# Patch output (generated locally from your own dump)
+flash_patched.bin
+kickr_core_patched.hex
+*.patched.bin
+
+# OS / editor cruft
+.DS_Store
+*.swp
+.vscode/
+.idea/
+__pycache__/
+*.pyc

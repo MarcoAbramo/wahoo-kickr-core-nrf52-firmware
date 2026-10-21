@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap"
+        rel="stylesheet">
+    <title>SWD Flasher</title>
+    <style type="text/css">
+        * {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 300;
+        }
+
+        h2,
+        h3,
+        h4,
+        h5,
+        b {
+            font-weight: 700;
+        }
+
+        h1 {
+            font-weight: 900;
+        }
+
+        button {
+            font-weight: 400;
+        }
+
+        label {
+            font-weight: 500;
+        }
+
+        section {
+            margin: 1.5em;
+            border: 1px solid black;
+            padding: 1em;
+        }
+
+        section>h2 {
+            background-color: white;
+            margin-top: -1.5em;
+            width: max-content;
+            padding: 0 0.5em;
+            margin-left: 0.5em;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>ESP32 SWD Flasher</h1>
+        <p>nRF52 Flasher and Glitcher</p>
+    </header>
+    Copyright (c) 2021 Aaron Christophel ATCnetz.de
+    <section>
+        <h2>Glitcher</h2>
+        <label for="delay">Delay Input (µs):</label>
+        <input type="text" id="delay" name="delay" value="2000">
+        <label for="delay_end">Delay End (µs):</label>
+        <input type="text" id="delay_end" name="delay_end" value="3000">
+        <br>(Glitcher will run between the two delay times)
+		<br><br>
+        <label for="power_off_delay">Power Off Delay (µs):</label>
+        <input type="text" id="power_off_delay" name="power_off_delay" value="50">
+        <label for="swd_wait">SWD Wait (µs):</label>
+        <input type="text" id="swd_wait" name="swd_wait" value="100">
+        <button onclick='send("set_delay?delay="+document.getElementById("delay").value+"&delay_end="+document.getElementById("delay_end").value+"&power_off="+document.getElementById("power_off_delay").value+"&swd_wait="+document.getElementById("swd_wait").value)'>Set Glitch
+            Delay</button>
+            <br><br>
+        <button onclick='send("set_glitcher?state=1")'>Enable Glitcher</button>
+		<button onclick='send("set_glitcher?state=0")'>Disable Glitcher</button>
+        <br><br>
+        <button onclick='send("set_glitcher?state=dump_full_flash")'>Dump Full Flash</button>
+        <button onclick='send("set_glitcher?state=dump_full_uicr")'>Dump UICR</button>
+    </section>
+
+    <section>
+        <h2>SWD</h2>
+        <button onclick='send("set_swd?cmd=init")'>Init SWD</button>
+        <button onclick='send("set_swd?cmd=lock_state")'>Read nRF Lock State</button>
+        <button onclick='send("set_swd?cmd=set_lock")'>Set nRF Lock Bit</button>
+        <button onclick='send("set_swd?cmd=erase_all")'>Erase nRF</button>
+        <button onclick='send("set_swd?cmd=set_reset")'>Reset nRF</button>
+        <br><br>
+
+        <label for="flash_address">Address</label>
+        <input type="text" id="flash_address" name="flash_address" value="0">
+        <label for="flash_value">Value</label>
+        <input type="text" id="flash_value" name="flash_value" value="0">
+        <button onclick='send("set_swd?cmd=read_register&address="+document.getElementById("flash_address").value)'>Read
+            nRF Register</button>
+        <button
+            onclick='send("set_swd?cmd=write_register&address="+document.getElementById("flash_address").value + "&value="+document.getElementById("flash_value").value)'>Write
+            nRF Register</button>
+        <button
+            onclick='send("set_swd?cmd=write_flash&address="+document.getElementById("flash_address").value + "&value="+document.getElementById("flash_value").value)'>Write
+            nRF Flash</button><br><br>
+
+        <button onclick='send("set_swd?cmd=power_on")'>Power ON</button>
+        <button onclick='send("set_swd?cmd=power_off")'>Power OFF</button>
+    </section>
+
+    <section>
+        <h2>Flash</h2>
+        <button onclick='send("flash_cmd?cmd=erase_all")'>Erase nRF</button>
+        <button onclick='send("set_swd?cmd=set_reset")'>Reset nRF</button>
+        <br><br>
+
+        <label for="flash_page_address">Address 0x</label>
+        <input type="text" id="flash_page_address" name="flash_address" value="0">
+        <button
+            onclick='send("flash_cmd?cmd=page_erase&address="+document.getElementById("flash_page_address").value)'>Erase
+            nRF Page</button>
+        <br><br>
+
+        <label for="flash_file">Flash File</label>
+        <input type="text" id="flash_file" name="flash_file" value="file.bin">
+        <label for="flash_file_offset">Offset 0x</label>
+        <input type="text" id="flash_file_offset" name="flash_file_offset" value="0">
+        <button
+            onclick='send("flash_cmd?cmd=flash_file&file="+document.getElementById("flash_file").value+"&offset="+document.getElementById("flash_file_offset").value)'>Flash
+            File</button>
+        <br><br>
+
+        <label for="flash_uploaded_file">Flash Uploaded File</label>
+        <form action="flash_file_direct" method="post" enctype="multipart/form-data" target="flash_uploaded_file">
+            <label for="flash_up_file_offset">Offset 0x</label>
+            <input type="text" id="flash_up_file_offset" name="flash_up_file_offset" value="0">
+            <input type="file" id="flash_file_direct" name="flash_file_direct">
+            <input type="submit" value="Flash Uploaded File" name="submit">
+        </form>
+        <br><br>
+
+        <label for="dump_file">Dump Flash to File</label>
+        <input type="text" id="dump_file" name="dump_file" value="file_dump.bin">
+        <label for="dump_file_offset">Offset 0x</label>
+        <input type="text" id="dump_file_offset" name="dump_file_offset" value="0">
+        <label for="dump_file_size">Size 0x</label>
+        <input type="text" id="dump_file_size" name="dump_file_size" value="100">
+        <button
+            onclick='send("flash_cmd?cmd=dump_flash&file="+document.getElementById("dump_file").value+"&offset="+document.getElementById("dump_file_offset").value+"&size="+document.getElementById("dump_file_size").value)'>Dump
+            to File</button>
+        <br><br>
+
+        <label for="download_flash">Download Flash Contents</label>
+        <label for="download_flash_offset">Offset 0x</label>
+        <input type="text" id="download_flash_offset" name="download_flash_offset" value="0">
+        <label for="download_flash_size">Size 0x</label>
+        <input type="text" id="download_flash_size" name="download_flash_size" value="100">
+        <button onclick='window.open("/download_flash?offset="+document.getElementById("download_flash_offset").value+"&len="+document.getElementById("download_flash_size").value)'>Download Flash</button>
+        <br><br>
+
+        (All values in HEX)
+    </section>
+
+    <section>
+        <h2>Status</h2>
+        <div id="answer"></div>
+        <div id="content"></div>
+        <div id="dot"></div>
+    </section>
+
+    <section>
+        <h2>nRF info</h2>
+        <div id="main_info"></div>
+    </section>
+
+    <section>
+        <h2>Glitch Osciliscope</h2>
+        <label for="graph_time">Time</label>
+        <input type="text" id="graph_time" name="graph_time" value="300">
+        <label for="graph_delay">Delay</label>
+        <input type="text" id="graph_delay" name="graph_delay" value="2000">
+        <button onclick='sendGraph("get_graph?size="+document.getElementById("graph_time").value+"&delay="+document.getElementById("graph_delay").value)'>Get Graph</button><br><br>
+        <div id="graph">
+
+           <canvas id="graph_canvas" width="5" height="5" style="border:1px solid #c3c3c3;"></canvas><br>
+
+        </div>
+    </section>
+
+    <section>
+        <h2>Instructions</h2>
+        This software makes it possibile to Read and Write the internal Flash of the Nordic nRF52 series with an
+        ESP32.<br>
+        <br>
+        To flash an nRF52 connect the following:
+		<br>• nRF52 <b>SWDCLK</b> to ESP gpio
+		<br>• nRF52 <b>SWDIO</b> to ESP gpio
+		<br>• nRF52 <b>GND</b> to ESP <b>GND</b> to N-Channel MOSFET <b>source</b> (Optional: O-scope <b>GND Clips</b>)
+		<br>• Then power the nRF52 as needed.<br>
+		<br>
+		To bypass the APPROTECT of an nRF52, connect all of the above and the following:
+		<br>• nRF52 3.3V Power <b>VDD</b> to ESP gpio (Optional: O-scope <b>Channel 2 Probe</b>)
+		<br>• N-Channel MOSFET <b>gate</b> to ESP gpio
+		<br>• N-Channel MOSFET <b>drain</b> to nRF52 <b>DEC1</b> (Optional: O-scope <b>Channel 1 Probe</b>)
+		<br>• Then power the nRF52 as needed. <a href="/pins">Here is a list of the ESP GPIO's used</a><br>
+    </section>
+
+    <script>
+        const infoDiv = document.getElementById('main_info');
+        const answerDiv = document.getElementById('answer');
+        const contentDiv = document.getElementById("content");
+        const progressMarker = document.getElementById("dot");
+
+
+        //Graph feature
+        const canvas = document.getElementById("graph_canvas");
+        const ctx = canvas.getContext("2d");
+
+        async function sendGraph(url) {
+            try {
+                const resp = await fetch(url, { method: "GET" })
+                let graph_data = await resp.text()
+                    let graph_parts = graph_data.split(',');
+                    graph_parts.pop();
+                    let max_val = Math.max(...graph_parts);
+                    let min_val = Math.min(...graph_parts);
+                    console.log("Max: "+ max_val);
+                    console.log("Min: "+ min_val);
+                    canvas.width = document.getElementById("graph_time").value;
+                    canvas.height = max_val-min_val;
+                    ctx.clearRect(0,0,canvas.width, canvas.height);
+                    ctx.beginPath();
+                    ctx.strokeStyle = 'blue';
+                    ctx.moveTo(0, 0);
+                    for (let i = 1; i < document.getElementById("graph_time").value; i++)
+                    {
+                      ctx.lineTo(i, max_val-graph_parts[i]);
+                      ctx.stroke();
+                    }
+            } catch (err) {
+                console.log("ERROR: " + err)
+            }
+        }
+        //Graph feature end
+
+
+        async function send(url) {
+            try {
+                const resp = await fetch(url, { method: "POST" })
+                answerDiv.innerHTML = await resp.text()
+            } catch (err) {
+                answerDiv.innerHTML = "ERROR: " + err
+            }
+        }
+
+
+        async function send_post(url, data_text) {
+            try {
+
+                var data = new FormData();
+                data.append('text', data_text);
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', url, true);
+                xhr.onload = function () {
+                    answerDiv.innerHTML = this.responseText;
+                    console.log(this.responseText);
+                };
+                xhr.send(data);
+            } catch (err) {
+                answerDiv.innerHTML = "ERROR: " + err
+            }
+        }
+
+
+        async function get(url) {
+            try {
+                const resp = await fetch(url, { method: "GET" })
+                answerDiv.innerHTML = await resp.text()
+            } catch (err) {
+                answerDiv.innerHTML = "ERROR: " + err
+            }
+        }
+
+        let new_cmd = "2";
+        let tikTok = false;
+        async function updateStatus() {
+            try {
+                const resp = await fetch("get_state?cmd=" + new_cmd, { method: "GET" })
+                new_cmd = "0";
+                if (resp.status !== 200) {
+                    throw new Error(`unexpected status code ${resp.status}`);
+                }
+                let response_text = await resp.text();
+                console.log('Answer: ' + response_text)
+                if (response_text.indexOf(';info;') == 0) {
+                    let parts = response_text.split(';');
+                    infoDiv.innerHTML = '<br>';
+                    if (parts[2] == "2") {
+                        infoDiv.innerHTML += 'nRF is connected ';
+                        if (parts[14] == "0")
+                            infoDiv.innerHTML += 'and lock bit set, so a good power glitch';
+                        infoDiv.innerHTML += '<br>';
+                        infoDiv.innerHTML += '<br>';
+                        infoDiv.innerHTML += 'Flash_Size: ' + Math.floor(parts[3] / 1024) + ' kB / 0x' + parseInt(parts[3]).toString(16) + '<br>';
+                        infoDiv.innerHTML += 'Part: ' + parseInt(parts[7]).toString(16) + '<br>';
+                        infoDiv.innerHTML += '<br>';
+                        infoDiv.innerHTML += 'SoftDevice: 0x' + parseInt(parts[13]).toString(16) + '<br>';
+                        infoDiv.innerHTML += '<br>';
+                        infoDiv.innerHTML += 'ESP32 Memory Size: <b>' + Math.floor(parts[10] / 1024) + '</b> kB<br>';
+                        infoDiv.innerHTML += 'ESP32 Free Memory: <b>' + Math.floor(parts[12] / 1024) + '</b> kB<br>';
+                        infoDiv.innerHTML += '<br>';
+                    } else {
+                        if (parts[2] == "1")
+                            infoDiv.innerHTML += 'nRF connected but locked<br>';
+                        else
+                            infoDiv.innerHTML += 'nRF not connected<br>';
+                        infoDiv.innerHTML += '<br>';
+                        infoDiv.innerHTML += 'ESP32 Memory Size: <b>' + Math.floor(parts[10] / 1024) + '</b> kB<br>';
+                        infoDiv.innerHTML += 'ESP32 Free Memory: <b>' + Math.floor(parts[12] / 1024) + '</b> kB<br>';
+                        infoDiv.innerHTML += '<br>';
+                    }
+                    new_cmd = "1";
+                } else {
+                    contentDiv.innerHTML = response_text;
+                }
+                tikTok = !tikTok;
+                progressMarker.innerText = tikTok ? "⚫" : "⚪";
+            } catch (err) {
+                contentDiv.innerHTML = "<b>ERROR:</b> " + err;
+                progressMarker.innerText = "🔴";
+            } finally {
+                setTimeout(updateStatus, 1000 + Math.floor(Math.random() * 100));
+            }
+        }
+
+        updateStatus();
+    </script>
+</body>
+
+</html>
